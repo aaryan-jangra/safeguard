@@ -1,0 +1,582 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: SafeGuard personal safety surveillance API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: users
+    description: User management
+  - name: contacts
+    description: Emergency contacts
+  - name: location
+    description: GPS location tracking
+  - name: alerts
+    description: Emergency alerts
+  - name: recordings
+    description: Video/audio recordings
+  - name: dashboard
+    description: Dashboard summary data
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /users/register:
+    post:
+      operationId: registerUser
+      summary: Register or upsert a user/device
+      tags: [users]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterUserRequest'
+      responses:
+        '200':
+          description: Registered user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /users/me:
+    get:
+      operationId: getMe
+      summary: Get the current user profile
+      tags: [users]
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /contacts:
+    get:
+      operationId: getContacts
+      summary: List all emergency contacts
+      tags: [contacts]
+      responses:
+        '200':
+          description: List of emergency contacts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Contact'
+    post:
+      operationId: createContact
+      summary: Add an emergency contact
+      tags: [contacts]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateContactRequest'
+      responses:
+        '201':
+          description: Created contact
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contact'
+
+  /contacts/{contactId}:
+    delete:
+      operationId: deleteContact
+      summary: Remove an emergency contact
+      tags: [contacts]
+      parameters:
+        - name: contactId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Deleted
+
+  /location:
+    post:
+      operationId: updateLocation
+      summary: Send a GPS location update from the device
+      tags: [location]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationUpdate'
+      responses:
+        '201':
+          description: Location recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationRecord'
+
+  /location/latest:
+    get:
+      operationId: getLatestLocation
+      summary: Get the most recent GPS location
+      tags: [location]
+      responses:
+        '200':
+          description: Latest location
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationRecord'
+
+  /location/history:
+    get:
+      operationId: getLocationHistory
+      summary: Get GPS location history
+      tags: [location]
+      parameters:
+        - name: hours
+          in: query
+          schema:
+            type: integer
+            default: 24
+      responses:
+        '200':
+          description: Location history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LocationRecord'
+
+  /alerts:
+    get:
+      operationId: getAlerts
+      summary: List all emergency alerts
+      tags: [alerts]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, resolved, all]
+            default: all
+      responses:
+        '200':
+          description: List of alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Alert'
+    post:
+      operationId: triggerAlert
+      summary: Trigger an emergency SOS alert
+      tags: [alerts]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TriggerAlertRequest'
+      responses:
+        '201':
+          description: Alert triggered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Alert'
+
+  /alerts/{alertId}:
+    get:
+      operationId: getAlert
+      summary: Get a single alert by ID
+      tags: [alerts]
+      parameters:
+        - name: alertId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Alert details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Alert'
+    patch:
+      operationId: updateAlert
+      summary: Update alert status (e.g. resolve it)
+      tags: [alerts]
+      parameters:
+        - name: alertId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAlertRequest'
+      responses:
+        '200':
+          description: Updated alert
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Alert'
+
+  /recordings:
+    get:
+      operationId: getRecordings
+      summary: List all video recordings
+      tags: [recordings]
+      responses:
+        '200':
+          description: List of recordings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Recording'
+    post:
+      operationId: createRecording
+      summary: Register a new recording entry
+      tags: [recordings]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRecordingRequest'
+      responses:
+        '201':
+          description: Recording entry created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recording'
+
+  /recordings/{recordingId}:
+    get:
+      operationId: getRecording
+      summary: Get a single recording
+      tags: [recordings]
+      parameters:
+        - name: recordingId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Recording details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recording'
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      summary: Get dashboard summary statistics
+      tags: [dashboard]
+      responses:
+        '200':
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardSummary'
+
+  /dashboard/recent-activity:
+    get:
+      operationId: getRecentActivity
+      summary: Get recent activity feed
+      tags: [dashboard]
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Recent activity items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ActivityItem'
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    User:
+      type: object
+      required: [id, name, deviceId, createdAt]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        deviceId:
+          type: string
+        phone:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    RegisterUserRequest:
+      type: object
+      required: [name, deviceId]
+      properties:
+        name:
+          type: string
+        deviceId:
+          type: string
+        phone:
+          type: string
+
+    Contact:
+      type: object
+      required: [id, name, phone, relationship, createdAt]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        relationship:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateContactRequest:
+      type: object
+      required: [name, phone, relationship]
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        relationship:
+          type: string
+
+    LocationUpdate:
+      type: object
+      required: [latitude, longitude]
+      properties:
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        accuracy:
+          type: number
+        altitude:
+          type: number
+        speed:
+          type: number
+        heading:
+          type: number
+
+    LocationRecord:
+      type: object
+      required: [id, latitude, longitude, timestamp]
+      properties:
+        id:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        accuracy:
+          type: number
+        altitude:
+          type: number
+        speed:
+          type: number
+        heading:
+          type: number
+        timestamp:
+          type: string
+          format: date-time
+
+    Alert:
+      type: object
+      required: [id, type, status, latitude, longitude, timestamp]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [sos, fall, tamper, manual]
+        status:
+          type: string
+          enum: [active, resolved]
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        message:
+          type: string
+        resolvedAt:
+          type: string
+          format: date-time
+        timestamp:
+          type: string
+          format: date-time
+
+    TriggerAlertRequest:
+      type: object
+      required: [type, latitude, longitude]
+      properties:
+        type:
+          type: string
+          enum: [sos, fall, tamper, manual]
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        message:
+          type: string
+
+    UpdateAlertRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [active, resolved]
+
+    Recording:
+      type: object
+      required: [id, alertId, duration, size, createdAt]
+      properties:
+        id:
+          type: string
+        alertId:
+          type: string
+        filename:
+          type: string
+        duration:
+          type: integer
+          description: Duration in seconds
+        size:
+          type: integer
+          description: File size in bytes
+        url:
+          type: string
+        thumbnailUrl:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateRecordingRequest:
+      type: object
+      required: [alertId, duration, size]
+      properties:
+        alertId:
+          type: string
+        filename:
+          type: string
+        duration:
+          type: integer
+        size:
+          type: integer
+        url:
+          type: string
+        thumbnailUrl:
+          type: string
+
+    DashboardSummary:
+      type: object
+      required: [totalAlerts, activeAlerts, resolvedAlerts, totalRecordings, isTracking, lastSeenAt]
+      properties:
+        totalAlerts:
+          type: integer
+        activeAlerts:
+          type: integer
+        resolvedAlerts:
+          type: integer
+        totalRecordings:
+          type: integer
+        isTracking:
+          type: boolean
+        lastSeenAt:
+          type: string
+          format: date-time
+        lastLocation:
+          $ref: '#/components/schemas/LocationRecord'
+
+    ActivityItem:
+      type: object
+      required: [id, type, description, timestamp]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [alert, location, recording]
+        description:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        alertType:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
