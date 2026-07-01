@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { FormEvent } from "react";
 import {
   useGetContacts,
   getGetContactsQueryKey,
@@ -48,7 +49,7 @@ export default function ContactsPage() {
     return Object.keys(e).length === 0;
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!validate()) return;
     createContact.mutate({ data: form });

@@ -1,19 +1,26 @@
 let _baseUrl = "";
 
+function getEnvValue(key: string) {
+  const maybeProcess = globalThis as typeof globalThis & {
+    process?: { env?: Record<string, string | undefined> };
+  };
+  return maybeProcess.process?.env?.[key];
+}
+
 function getDefaultBaseUrl() {
   if (typeof window !== "undefined" && typeof window.location !== "undefined") {
     const { protocol, hostname } = window.location;
-    if (hostname === "localhost" || hostname === "127.0.0.1") {
+    if (hostname === "localhost" || hostname === "192.168.2.205") {
       return `${protocol}//${hostname}:3000`;
     }
     return `${protocol}//${hostname}`;
   }
 
-  return "http://127.0.0.1:3000";
+  return "http://192.168.2.205:3000";
 }
 
 if (!_baseUrl) {
-  const envBaseUrl = process.env.EXPO_PUBLIC_API_URL ?? process.env.EXPO_PUBLIC_DOMAIN;
+  const envBaseUrl = getEnvValue("EXPO_PUBLIC_API_URL") ?? getEnvValue("EXPO_PUBLIC_DOMAIN");
   _baseUrl = envBaseUrl
     ? envBaseUrl.startsWith("http")
       ? envBaseUrl

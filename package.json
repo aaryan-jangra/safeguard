@@ -3,13 +3,14 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "build": "pnpm run typecheck && pnpm -r --if-present run build",
+    "build": "pnpm run typecheck && pnpm -r --filter \"./artifacts/**\" --if-present run build",
     "typecheck:libs": "tsc --build",
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
     "preinstall": "npx only-allow pnpm"
   },
   "private": true,
   "devDependencies": {
+    "@types/node": "catalog:",
     "only-allow": "^1.2.1",
     "prettier": "^3.8.4",
     "typescript": "~5.9.3"

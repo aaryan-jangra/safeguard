@@ -10,9 +10,8 @@ export const HealthCheckResponse = z.object({
 
 export const RegisterUserBody = z.object({
   name: z.string().min(1),
-  email: z.string().email(),
+  deviceId: z.string().min(1),
   phone: z.string().optional(),
-  password: z.string().min(6),
 });
 
 /* Contacts */
@@ -20,7 +19,8 @@ export const RegisterUserBody = z.object({
 export const CreateContactBody = z.object({
   name: z.string().min(1),
   phone: z.string().min(10),
-  relationship: z.string().optional(),
+  email: z.string().email().optional(),
+  relationship: z.string().min(1),
 });
 
 export const DeleteContactParams = z.object({
@@ -30,14 +30,14 @@ export const DeleteContactParams = z.object({
 /* Alerts */
 
 export const TriggerAlertBody = z.object({
-  latitude: z.number().optional(),
-  longitude: z.number().optional(),
-  type: z.enum(["sos", "fall", "tamper", "manual"]).optional(),
+  latitude: z.number(),
+  longitude: z.number(),
+  type: z.enum(["sos", "fall", "tamper", "manual"]),
   message: z.string().optional(),
 });
 
 export const UpdateAlertBody = z.object({
-  status: z.enum(["active", "resolved"]).optional(),
+  status: z.enum(["active", "resolved"]),
 });
 
 export const UpdateAlertParams = z.object({
@@ -64,9 +64,14 @@ export const GetRecentActivityQueryParams = z.object({
 export const UpdateLocationBody = z.object({
   latitude: z.number(),
   longitude: z.number(),
+  accuracy: z.number().optional(),
+  altitude: z.number().optional(),
+  speed: z.number().optional(),
+  heading: z.number().optional(),
 });
 
 export const GetLocationHistoryQueryParams = z.object({
+  hours: z.coerce.number().optional(),
   userId: z.string().optional(),
   limit: z.coerce.number().optional(),
 });
@@ -74,10 +79,14 @@ export const GetLocationHistoryQueryParams = z.object({
 /* Recordings */
 
 export const CreateRecordingBody = z.object({
-  alertId: z.string().optional(),
+  alertId: z.string(),
+  filename: z.string().optional(),
+  duration: z.number(),
+  size: z.number(),
   url: z.string().optional(),
+  thumbnailUrl: z.string().optional(),
 });
 
 export const GetRecordingParams = z.object({
-  id: z.string(),
+  recordingId: z.string(),
 });

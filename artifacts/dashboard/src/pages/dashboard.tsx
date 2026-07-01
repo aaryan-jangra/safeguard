@@ -1,5 +1,6 @@
 import { useGetDashboardSummary, useGetRecentActivity } from "@workspace/api-client-react";
 import { AlertTriangle, MapPin, Video, Radio, Clock, ExternalLink } from "lucide-react";
+import type { ElementType } from "react";
 import { cn } from "@/lib/utils";
 
 function formatTimestamp(ts: string) {
@@ -23,7 +24,7 @@ function StatCard({
 }: {
   label: string;
   value: string | number;
-  icon: React.ElementType;
+  icon: ElementType;
   accent?: string;
   sub?: string;
 }) {

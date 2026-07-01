@@ -1,5 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
+import type { ReactNode } from "react";
 import {
   LayoutDashboard,
   Bell,
@@ -23,7 +24,7 @@ const navItems = [
 ];
 
 interface LayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
   darkMode: boolean;
   onToggleDark: () => void;
 }
